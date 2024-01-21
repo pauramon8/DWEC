@@ -1,1 +1,3 @@
 # DWEC
+
+Totes les activitats de DESENVOLUPAMENT WEB EN ENTORN CLIENT
