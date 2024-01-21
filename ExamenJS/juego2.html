@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        html {
+            background: url("kungfupanda.jpg");
+        }
+
+        .contenedor-jugador {
+            display: flex;
+            justify-content: space-around;
+            flex-wrap: wrap;
+        }
+
+        .carta {
+            border: 1px solid black;
+            margin: 10px;
+            padding: 10px;
+            width: calc(20% - 20px);
+            box-sizing: border-box;
+            display: inline-block;
+            cursor: pointer;
+            text-align: center;
+            background: rgba(255, 255, 255, 0.5);
+        }
+
+        .seleccionada {
+            border: 2px solid limegreen;
+        }
+
+        body {
+            background-image: url(fondo.jpg);
+            background-repeat: no-repeat;
+            background-size: cover;
+        }
+
+        #boton {
+            margin-left: 850px;
+        }
+
+        h1 {
+            text-align: center;
+        }
+
+        #contenedor-jugador1,
+        #contenedor-jugador2 {
+            margin-top: 25px;
+        }
+
+        img {
+            max-width: 150px;
+            max-height: 150px;
+        }
+    </style>
+
+    <title>Juego de cartas</title>
+</head>
+
+<body>
+    <h1 style="margin-bottom: 50px;">Juego de Kung Fu Panda</h1>
+
+    <button onclick="iniciarCombate()" id="boton">Iniciar Combate</button>
+    <button onClick="window.location.reload();">Borrar</button>
+    <h1>Jugador 1</h1>
+    <div id="contenedor-jugador1"></div>
+    <h1>Jugador 2</h1>
+    <div id="contenedor-jugador2"></div>
+
+    <template id="cartaTemplate">
+        <article id="" class="carta">
+        <img src="">
+        <h3>Nombre</h3>
+        <p>Ataque: </p>
+        <p>Defensa: </p>
+        <p>Velocidad: </p>
+        <p>Vida: </p>
+        </article>
+    </template>
+
+    <script>
+        let cartaJugador1 = null;
+        let cartaJugador2 = null;
+
+        function iniciarCombate() {
+            if (!cartaJugador1 || !cartaJugador2) {
+                alert("Selecciona una carta para cada jugador antes de iniciar el combate.");
+                return;
+            }
+
+            combatir(cartaJugador1, cartaJugador2);
+
+            // Reiniciar las variables para la próxima ronda
+            cartaJugador1 = null;
+            cartaJugador2 = null;
+        }
+
+        function combatir(cartaJugador1, cartaJugador2) {
+            let atacante = null;
+            let defensor = null;
+
+            if (parseInt(cartaJugador1.dataset.velocidad) > parseInt(cartaJugador2.dataset.velocidad)) {
+                atacante = cartaJugador1;
+                defensor = cartaJugador2;
+            } else {
+                atacante = cartaJugador2;
+                defensor = cartaJugador1;
+            }
+
+            combatirRonda(atacante, defensor);
+
+            while (parseInt(cartaJugador1.dataset.salud) > 0 && parseInt(cartaJugador2.dataset.salud) > 0) {
+                [atacante, defensor] = [defensor, atacante];
+                combatirRonda(atacante, defensor);
+            }
+
+            if (parseInt(cartaJugador1.dataset.salud) <= 0) {
+                alert("¡Jugador 2 gana!");
+            } else {
+                alert("¡Jugador 1 gana!");
+            }
+        }
+
+        function combatirRonda(atacante, defensor) {
+            const ataque = parseInt(atacante.dataset.ataque);
+            const defensa = parseInt(defensor.dataset.defensa);
+            let danio = 0;
+
+            if (ataque > defensa) {
+                danio = ataque - defensa;
+            } else {
+                danio = 10;
+            }
+
+            const vidaActual = parseInt(defensor.dataset.salud);
+            const nuevaVida = Math.max(0, vidaActual - danio);
+
+            defensor.dataset.salud = nuevaVida;
+            defensor.querySelector("p:last-child").textContent = `Vida: ${nuevaVida}`;
+            defensor.classList.add("seleccionada");
+        }
+
+        function crearCarta(datosCarta, jugador) {
+            const carta = document.createElement("div");
+            carta.classList.add("carta");
+
+            carta.innerHTML = `
+                <img src="${datosCarta.imatge}" alt="${datosCarta.nom}">
+                <h3>${datosCarta.nom}</h3>
+                <p>Ataque: ${datosCarta.atac}</p>
+                <p>Defensa: ${datosCarta.defensa}</p>
+                <p>Velocidad: ${datosCarta.velocitat}</p>
+                <p>Vida: ${datosCarta.salut}</p>
+            `;
+
+            carta.dataset.ataque = datosCarta.atac;
+            carta.dataset.defensa = datosCarta.defensa;
+            carta.dataset.velocidad = datosCarta.velocitat;
+            carta.dataset.salud = datosCarta.salut;
+
+            carta.addEventListener("click", () => seleccionarCarta(carta, jugador));
+
+            return carta;
+        }
+
+        function seleccionarCarta(carta, jugador) {
+    // Verifica si ya hay una carta seleccionada para el jugador
+    if (jugador === 1) {
+        if (cartaJugador1) {
+            cartaJugador1.classList.remove("seleccionada");
+        }
+        cartaJugador1 = carta;
+    } else {
+        if (cartaJugador2) {
+            cartaJugador2.classList.remove("seleccionada");
+        }
+        cartaJugador2 = carta;
+    }
+
+    // Asegura que la carta seleccionada tenga la clase
+    carta.classList.add("seleccionada");
+}
+
+        const contenedorJugador1 = document.getElementById("contenedor-jugador1");
+        const contenedorJugador2 = document.getElementById("contenedor-jugador2");
+
+        const cartas = [
+            { "nom": "Po", "atac": 100, "defensa": 85, "velocitat": 60, "salut": 120, "imatge": "po.jpg" },
+            { "nom": "Tigresa", "atac": 95, "defensa": 80, "velocitat": 65, "salut": 120, "imatge": "tigresa.png" },
+            { "nom": "Mono", "atac": 90, "defensa": 75, "velocitat": 70, "salut": 120, "imatge": "mono.jpg" },
+            { "nom": "Grulla", "atac": 92, "defensa": 78, "velocitat": 68, "salut": 110, "imatge": "grulla.jpg" },
+            { "nom": "Tai Lung", "atac": 94, "defensa": 82, "velocitat": 75, "salut": 130, "imatge": "tailung.jpg" },
+            { "nom": "Shifu", "atac": 93, "defensa": 88, "velocitat": 72, "salut": 115, "imatge": "shifu.jpg" },
+            { "nom": "Víbora", "atac": 40, "defensa": 30, "velocitat": 100, "salut": 190, "imatge": "vibora.jpg" },
+            { "nom": "Maestro Oogway", "atac": 88, "defensa": 82, "velocitat": 60, "salut": 110, "imatge": "oogway.jpg" },
+            { "nom": "Mantis", "atac": 90, "defensa": 80, "velocitat": 70, "salut": 100, "imatge": "mantis.jpg" },
+            { "nom": "Maestro Rino", "atac": 96, "defensa": 85, "velocitat": 68, "salut": 140, "imatge": "rino.jpg" }
+        ];
+
+        const cartasShuffle = cartas.sort(() => Math.random() - 0.5);
+
+        for (let i = 0; i < 5; i++) {
+            const jugador1Carta = crearCarta(cartasShuffle[i], 1);
+            const jugador2Carta = crearCarta(cartasShuffle[i + 5], 2);
+
+            contenedorJugador1.appendChild(jugador1Carta);
+            contenedorJugador2.appendChild(jugador2Carta);
+        }
+    </script>
+</body>
+
+</html>
